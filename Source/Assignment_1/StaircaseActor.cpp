@@ -6,7 +6,6 @@ AStaircaseActor::AStaircaseActor()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-
 	NumberOfStairs = 5;
 	Width = 1.0f;
 	Depth = 3.5f;
@@ -18,14 +17,14 @@ AStaircaseActor::AStaircaseActor()
 
 	scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene Component"));
 	this->SetRootComponent(scene);
-
+	StairStaticMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Script/Engine.StaticMesh'/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube'"));
 }
 
 void AStaircaseActor::OnConstruction(const FTransform& Ftransform)
 {
 
 	ClearStairArray(StairArray);
-	
+
 
 	for (int i = 0; i < NumberOfStairs; i++) {
 
@@ -46,32 +45,25 @@ void AStaircaseActor::OnConstruction(const FTransform& Ftransform)
 			RightRailing = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), *RightRailingName);
 			RightRailing->AttachToComponent(Stair, FAttachmentTransformRules::KeepRelativeTransform);
 			RightRailing->RegisterComponentWithWorld(GetWorld());
-			RightRailing->SetRelativeLocation({ 0,(StairY/2),0 });
+			RightRailing->SetRelativeLocation({ 0,(StairY / 2),100 });
 			RightRailing->SetStaticMesh(StairStaticMesh);
 			RightRailing->SetMaterial(0, RailingMaterial);
-
 
 			FString LeftRailingName = "LeftRailing" + FString::FromInt(i);
 			LeftRailing = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), *LeftRailingName);
 			LeftRailing->AttachToComponent(Stair, FAttachmentTransformRules::KeepRelativeTransform);
 			LeftRailing->RegisterComponentWithWorld(GetWorld());
-			LeftRailing->SetRelativeLocation({ 0,-(StairY/2),0 });
+			LeftRailing->SetRelativeLocation({ 0,-(StairY / 2),100 });
 			LeftRailing->SetStaticMesh(StairStaticMesh);
 			LeftRailing->SetMaterial(0, RailingMaterial);
-
 		}
-		
 
-		if (StairType== TypeOfStair::Box) {
+
+		if (StairType == TypeOfStair::Box) {
 
 			FVector scaleStair(Width, Depth, 0.25 + Height * (i + 1));
 			Stair->SetRelativeScale3D(scaleStair);
-			Stair->SetRelativeLocation({ i * StepRelativeWidth,0.0f,0.0f });
-			
-			if (AddRailings) {
-				RightRailing->SetWorldScale3D({ Stair->GetRelativeScale3D().X, 0.1f, 2 + (Height * (i + 1)) });
-				LeftRailing->SetWorldScale3D({ Stair->GetRelativeScale3D().X, 0.1f, 2 + (Height * (i + 1)) });
-			}
+			Stair->SetRelativeLocation({ i * StairX,0.0f,0.0f });
 
 		}
 		else {
@@ -80,19 +72,18 @@ void AStaircaseActor::OnConstruction(const FTransform& Ftransform)
 			Stair->SetRelativeScale3D(scaleStair);
 
 			if (StairType == TypeOfStair::Close) {
-				Stair->SetRelativeLocation({ i * StepRelativeWidth,0.0f,(i * StepHeight) });
+				Stair->SetRelativeLocation({ i * StairX,0.0f,(i * StepHeight) });
 			}
 			else {
-				Stair->SetRelativeLocation({ i * (StepRelativeWidth+10),0.0f,(i * (StepHeight+20)) });
+				Stair->SetRelativeLocation({ i * StairX,0.0f,(i * (StepHeight + 20)) });
 			}
-
-			if (AddRailings) {
-				RightRailing->SetWorldScale3D({ Stair->GetRelativeScale3D().X, 0.1f, 2 + Height });
-				LeftRailing->SetWorldScale3D({ Stair->GetRelativeScale3D().X, 0.1f, 2 + Height });
-			}
-
+			
 		}
 
+		if (AddRailings) {
+			RightRailing->SetWorldScale3D({ (Stair->GetRelativeScale3D().X) / 4, 0.1f / 2, 2 });
+			LeftRailing->SetWorldScale3D({ (Stair->GetRelativeScale3D().X) / 4, 0.1f / 2, 2 });
+		}
 
 		FStairStaticMeshStruct StairMesh;
 		StairMesh.Stairs = Stair;
@@ -108,7 +99,6 @@ void AStaircaseActor::OnConstruction(const FTransform& Ftransform)
 		StairArray.Add(StairMesh);
 
 	}
-
 
 }
 
@@ -142,5 +132,4 @@ void AStaircaseActor::ClearStairArray(TArray<FStairStaticMeshStruct> StairArray_
 	}
 
 	StairArray_.Empty();
-
 }
